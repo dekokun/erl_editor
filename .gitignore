@@ -1,2 +1,5 @@
 .erlang.mk.packages.v2
 _rel/*
+node_modules/*
+deps/*
+ebin/*
