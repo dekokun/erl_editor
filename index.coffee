@@ -62,7 +62,7 @@ Editor = React.createClass
 
   render: ->
     $ 'div', {key: 'root'}, [
-      $ 'h1', {style: {textAlign: 'center', fontFamily: '"Poiret One", cursive', fontSize: '25px', height: '50px', lineHeight: '50px'}}, 'md2react playground'
+      $ 'h1', {style: {textAlign: 'center', fontFamily: '"Poiret One", cursive', fontSize: '25px', height: '50px', lineHeight: '50px'}}, 'erlang editor'
       $ 'div', {key: 'layout', className: 'flex'}, [
         $ 'div', {key: 'editorContainer', style:{
           width: '50%', borderRight: '1px solid', borderColor: '#999', overflow: 'hidden'}
