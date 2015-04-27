@@ -1,3 +1,7 @@
+# Copyright (c) 2015 mizchi
+# Released under the MIT license
+# https://raw.githubusercontent.com/mizchi/md2react/master/LICENSE
+
 global.React = require('react')
 md2react = require('md2react')
 
