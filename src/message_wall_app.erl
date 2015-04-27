@@ -20,7 +20,7 @@ start(_Type, _Args) ->
     [
       {env, [{dispatch, Dispatch}]}
     ]),
-	message_wall_sup:start_link().
+  message_wall_sup:start_link().
 
 stop(_State) ->
-	ok.
+  ok.

@@ -7,9 +7,9 @@
 	{applications, [
 		kernel,
 		stdlib,
-        cowboy,
-        jiffy,
-        gproc
+		cowboy,
+		jiffy,
+		gproc
 	]},
 	{mod, {message_wall_app, []}},
 	{env, []}

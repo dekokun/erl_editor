@@ -109,7 +109,7 @@ format_ip(Ip) -> Ip.
 % erlangのdatetimeをISO8601形式に変換
 iso8601(Time) ->
   {{Year, Month, Day},{Hour, Minut, Second}} = calendar:now_to_universal_time(Time),
-  io_lib:format("~4..0B-~2..0B-~2..0BT~2..0B:~2..0B:~2..0BZ", [Year, Month, Day, Hour, Minut, Second]). 
+  io_lib:format("~4..0B-~2..0B-~2..0BT~2..0B:~2..0B:~2..0BZ", [Year, Month, Day, Hour, Minut, Second]).
 
 % ETSにメッセージを保存する
 save_message({Time, Text, Ip, Ua}) ->
