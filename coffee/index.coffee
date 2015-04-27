@@ -3,6 +3,9 @@
 # https://raw.githubusercontent.com/mizchi/md2react/master/LICENSE
 
 SocketService = require('./SocketService')
+
+socketService = new SocketService('localhost:8001/websocket')
+
 global.React = require('react')
 md2react = require('md2react')
 
@@ -51,13 +54,24 @@ Editor = React.createClass
         # highlight: (code, lang, key) -> # custom highlighter
         #   "#{lang}: #{code}"
       @setState content: content
+      @sendMarkdown(editor.value)
     catch e
       console.warn 'markdown parse error'
 
   componentDidMount: ->
     editor = @refs.editor.getDOMNode()
-    editor.value = defaultMarkdown
-    @update()
+    socketService.sendRequest(
+      {get_md: true},
+      (markdown) =>
+        editor.value = markdown
+        @update()
+    )
+
+  sendMarkdown: (markdown)->
+    socketService.sendRequest(
+      {set_md: markdown},
+      () => {}
+    )
 
   getInitialState: -> {content: null}
 
