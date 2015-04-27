@@ -84,9 +84,6 @@ Editor = React.createClass
           }
         }, if @state.content then [@state.content] else ''
       ]
-      $ 'div', {width: '100%', style: {textAlign: 'center', marginTop: '10px'}}, [
-        $ 'a', {href:'https://github.com/mizchi/md2react', style: {fontFamily: 'Helvetica Neue, Helvetica', fontSize: '17px'}}, '[Fork me on GitHub](mizchi/md2react)'
-      ]
     ]
 
 window.addEventListener 'DOMContentLoaded', ->
