@@ -1,10 +1,11 @@
-SocketService = ->
+SocketService = (url)->
   service = {}
   pendingCallbacks = {}
   currentMessageId = 0
   ws = undefined
   preConnectionRequests = []
   connected = false
+  url = url || window.location.hostname + (if location.port then ':' + location.port else '')
 
   init = ->
     service = {}
@@ -12,7 +13,8 @@ SocketService = ->
     currentMessageId = 0
     preConnectionRequests = []
     connected = false
-    ws = new WebSocket('ws://' + window.location.hostname + (if location.port then ':' + location.port else ''))
+    ws_url = 'ws://' + url
+    ws = new WebSocket(ws_url)
 
     ws.onopen = ->
       connected = true
