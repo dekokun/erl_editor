@@ -74,3 +74,5 @@ SocketService = ->
   service.requestComplete = requestComplete
   service.stopRequest = stopRequest
   service
+
+module.exports = SocketService
