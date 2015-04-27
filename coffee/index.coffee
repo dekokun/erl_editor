@@ -2,6 +2,7 @@
 # Released under the MIT license
 # https://raw.githubusercontent.com/mizchi/md2react/master/LICENSE
 
+SocketService = require('./SocketService')
 global.React = require('react')
 md2react = require('md2react')
 
