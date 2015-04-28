@@ -61,15 +61,16 @@ Editor = React.createClass
   componentDidMount: ->
     editor = @refs.editor.getDOMNode()
     socketService.sendRequest(
-      {get_md: true},
+      'get_markdown',
       (markdown) =>
+        console.log(markdown);
         editor.value = markdown
         @update()
     )
 
   sendMarkdown: (markdown)->
     socketService.sendRequest(
-      {set_md: markdown},
+      {set_markdown: markdown},
       () => {}
     )
 

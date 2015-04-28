@@ -5,7 +5,7 @@
 -export([stop/1]).
 
 start(_Type, _Args) ->
-  ets:new(message_wall, [ordered_set, named_table, public]),
+  ets:new(message_wall, [set, named_table, public]),
   Dispatch = cowboy_router:compile([
     {'_', [
       % cowboy_staticはパスマッチに対して、静的ファイルを読み込む

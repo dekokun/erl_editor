@@ -29,16 +29,15 @@ websocket_init(_, Req, _Opts) ->
   {ok, Req2, State, 600000, hibernate}.
 
 % get_listメッセージの場合はメッセージのリストを返します
-websocket_handle({text, <<"get_list">>}, Req, State) ->
+websocket_handle({text, <<"\"get_markdown\"">>}, Req, State) ->
+  io:format("get_markdownですよ"),
   % 最新のメッセージを取得する
-  RawMessages = get_recent_messages(10),
+  Tuple = get_markdown(1),
   % メッセージをJiffyが変換できる形式に変更
-  Messages = format_messages(RawMessages),
+  Markdown = format_markdown(Tuple),
   % JiffyでJsonレスポンスを生成
-  JsonResponse = jiffy:encode(#{
-    <<"type">> => <<"message_list">>,
-    <<"messages">> => Messages
-  }),
+  JsonResponse = jiffy:encode(Markdown),
+  io:format("get_markdownですよ ~s", [JsonResponse]),
   % JSONを返す
   {reply, {text, JsonResponse}, Req, State};
 
@@ -76,21 +75,15 @@ websocket_terminate(_Reason, _Req, _State) ->
   ok.
 
 % 最新のNumberメッセージを取得する
-get_recent_messages(Number) ->
-  case ets:last(?TABLE) of
-    '$end_of_table' -> [];
-    Key -> get_recent_messages(Key, Number, [])
+get_markdown(Id) ->
+  case ets:lookup(?TABLE, Id) of
+    [] -> {Id, <<"">>};
+    [Tuple] -> Tuple
   end.
-get_recent_messages(_Key, 0, Messages) -> lists:reverse(Messages);
-get_recent_messages('$end_of_table', _Number, Messages) -> lists:reverse(Messages);
-get_recent_messages(Key, Number, Messages) ->
-  Message = ets:lookup(?TABLE, Key),
-  PreviousKey = ets:prev(?TABLE, Key),
-  get_recent_messages(PreviousKey, Number-1, [Message|Messages]).
 
 % ETS結果メッセージをJiffyが変換できる形式に変更
-format_messages(RawMessages) ->
-  lists:map(fun(Message) -> format_message(Message) end, RawMessages).
+format_markdown({_Id, Markdown}) ->
+  Markdown.
 
 % ETS結果メッセージをJiffyが変換できる形式に変更
 format_message([{Time, Message, Ip, Ua}]) ->
