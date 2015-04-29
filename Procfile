@@ -1,1 +1,1 @@
-web: erl -pa ebin deps/*/ebin -noshell -boot start_sasl -s reloader -s message_wall
+web: erl -pa ebin deps/*/ebin -noshell -s message_wall start
