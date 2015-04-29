@@ -1,1 +1,1 @@
-web: make && erl -pa ebin deps/*/ebin -noshell -noinput -s message_wall
+web: erl -pa ebin deps/*/ebin -noshell -noinput -s message_wall
