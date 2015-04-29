@@ -47,6 +47,8 @@ Editor = React.createClass
   contentUpdateFromMarkdown: ->
     editor = @refs.editor.getDOMNode()
     @sendMarkdown(editor.value)
+    @setState
+      markdown: editor.value
     try
       content = md2react editor.value,
         gfm: true
