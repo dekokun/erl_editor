@@ -44,7 +44,7 @@ var x = 3;
 '''
 
 Editor = React.createClass
-  update: ->
+  contentUpdateFromMarkdown: ->
     editor = @refs.editor.getDOMNode()
     try
       content = md2react editor.value,
@@ -59,13 +59,11 @@ Editor = React.createClass
       console.warn 'markdown parse error'
 
   componentDidMount: ->
-    editor = @refs.editor.getDOMNode()
-    socketService.sendRequest(
-      'get_markdown',
-      (markdown) =>
-        console.log(markdown);
-        editor.value = markdown
-        @update()
+    @syncMarkdownFromServer()
+    setInterval(
+      ()=>
+        @syncMarkdownFromServer()
+      1000
     )
 
   sendMarkdown: (markdown)->
@@ -73,8 +71,17 @@ Editor = React.createClass
       {set_markdown: markdown},
       () => {}
     )
+  syncMarkdownFromServer: () ->
+    socketService.sendRequest(
+      'get_markdown',
+      (data) =>
+        @setState markdown: data.markdown
+        @contentUpdateFromMarkdown
+    )
 
-  getInitialState: -> {content: null}
+  getInitialState: ->
+    content: null
+    markdown: null
 
   render: ->
     $ 'div', {key: 'root'}, [
@@ -85,8 +92,9 @@ Editor = React.createClass
         }, [
           $ 'textarea', {
             ref:'editor'
-            onChange: @update
+            onInput: @contentUpdateFromMarkdown
             style: {height: '100%', width: '100%', border: 0, outline: 0, fontSize: '14px', padding: '5px', overflow: 'auto', fontFamily:'Consolas, Menlo, monospace', resize: 'none', background: 'transparent'}
+            value: @state.markdown
           }
         ]
         $ 'div',{

@@ -7,7 +7,7 @@
 -export([websocket_info/3]).
 -export([websocket_terminate/3]).
 
--record(state, {ip, ua}).
+-record(state, {ip, ua, room_id}).
 
 -define(TABLE, message_wall).
 
@@ -21,34 +21,43 @@ websocket_init(_, Req, _Opts) ->
   % stateを設定する
   Ip = get_ip(Req),
   {UserAgent, _Req} = cowboy_req:header(<<"user-agent">>, Req),
-  State = #state{ip=Ip, ua=UserAgent},
+  State = #state{ip=Ip, ua=UserAgent, room_id=1},
   % WebSocketリクエストは長くなる可能性があるため
   % 不要なデータをReqから削除
   Req2 = cowboy_req:compact(Req),
   % 自動切断を10分に設定する（60万ミリ秒）
   {ok, Req2, State, 600000, hibernate}.
 
-% get_listメッセージの場合はメッセージのリストを返します
-websocket_handle({text, <<"\"get_markdown\"">>}, Req, State) ->
-  io:format("get_markdownですよ"),
+% get_markdownメッセージの場合はメッセージのリストを返します
+websocket_handle({text, <<"\"get_markdown\"">>}, Req, #state{room_id=RoomId} = State) ->
+  io:format("get_markdownですよ~n"),
   % 最新のメッセージを取得する
-  Tuple = get_markdown(1),
+  Tuple = get_markdown(RoomId),
   % メッセージをJiffyが変換できる形式に変更
   Markdown = format_markdown(Tuple),
+  io:format("dataですよ ~w~n", [Markdown]),
   % JiffyでJsonレスポンスを生成
-  JsonResponse = jiffy:encode(Markdown),
-  io:format("get_markdownですよ ~s", [JsonResponse]),
+  JsonResponse = jiffy:encode(#{
+    <<"type">> => <<"all">>,
+    <<"markdown">> => Markdown
+  }),
+  io:format("responceですよ ~s~n", [JsonResponse]),
   % JSONを返す
   {reply, {text, JsonResponse}, Req, State};
 
-% get_list以外のメッセージは保存する
-websocket_handle({text, Text}, Req, #state{ua=Ua, ip=Ip} = State) ->
-  Time = now(),
-  Message = {Time, Text, Ip, Ua},
-  save_message(Message),
+% get_markdown以外のメッセージの扱い
+websocket_handle({text, Text}, Req, #state{room_id=RoomId} = State) ->
+  {[{<<"set_markdown">>,RawMarkdown}|_]} = jiffy:decode(Text),
+  io:format("~w~n", [RawMarkdown]),
+  Markdown = case RawMarkdown of
+    <<>> -> "";
+    Data -> Data
+  end,
+  io:format("~w~n", [Markdown]),
+  save_message(RoomId, Markdown),
   % gprocにイベントを公開し、
   % 全ての接続クライアントにwebsocket_info({gproc_ps_event, new_message, Time}, Req, State)を呼び出します
-  gproc_ps:publish(l, new_message, Time),
+  gproc_ps:publish(l, new_message, RoomId),
   {ok, Req, State};
 
 
@@ -60,12 +69,14 @@ websocket_handle(_Frame, Req, State) ->
 % websocket_infoは本プロセスにErlangメッセージが届いた時に実行されます
 % gprocからnew_messageメッセージの場合はそのメッセージをWebSocketに送信します
 websocket_info({gproc_ps_event, new_message, Key}, Req, State) ->
-  RawMessage = ets:lookup(?TABLE, Key),
+  RawMessage = get_markdown(Key),
   % ETS結果をマップに変換
+  io:format("~w", [RawMessage]),
+  io:format("~w, ~w~n", [RawMessage, ?LINE]),
   Message = format_message(RawMessage),
   JsonResponse = jiffy:encode(#{
-    <<"type">> => <<"new_message">>,
-    <<"message">> => Message
+    <<"type">> => <<"all">>,
+    <<"markdown">> => Message
   }),
   {reply, {text, JsonResponse}, Req, State};
 websocket_info(_Info, Req, State) ->
@@ -74,7 +85,7 @@ websocket_info(_Info, Req, State) ->
 websocket_terminate(_Reason, _Req, _State) ->
   ok.
 
-% 最新のNumberメッセージを取得する
+% 対応するmarkdownを取得する
 get_markdown(Id) ->
   case ets:lookup(?TABLE, Id) of
     [] -> {Id, <<"">>};
@@ -86,27 +97,22 @@ format_markdown({_Id, Markdown}) ->
   Markdown.
 
 % ETS結果メッセージをJiffyが変換できる形式に変更
-format_message([{Time, Message, Ip, Ua}]) ->
-  #{
-    <<"date">> => unicode:characters_to_binary(iso8601(Time)),
-    <<"ip">>   => unicode:characters_to_binary(format_ip(Ip)),
-    <<"text">> => Message,
-    <<"ua">>   => Ua
-  }.
+format_message({_Key, Markdown}) ->
+  unicode:characters_to_binary(Markdown).
 
 % IPタプルを文字列に変換
-format_ip({I1,I2,I3,I4}) ->
-  io_lib:format("~w.~w.~w.~w",[I1,I2,I3,I4]);
-format_ip(Ip) -> Ip.
+% format_ip({I1,I2,I3,I4}) ->
+%   io_lib:format("~w.~w.~w.~w",[I1,I2,I3,I4]);
+% format_ip(Ip) -> Ip.
 
 % erlangのdatetimeをISO8601形式に変換
-iso8601(Time) ->
-  {{Year, Month, Day},{Hour, Minut, Second}} = calendar:now_to_universal_time(Time),
-  io_lib:format("~4..0B-~2..0B-~2..0BT~2..0B:~2..0B:~2..0BZ", [Year, Month, Day, Hour, Minut, Second]).
+% iso8601(Time) ->
+%   {{Year, Month, Day},{Hour, Minut, Second}} = calendar:now_to_universal_time(Time),
+%   io_lib:format("~4..0B-~2..0B-~2..0BT~2..0B:~2..0B:~2..0BZ", [Year, Month, Day, Hour, Minut, Second]).
 
 % ETSにメッセージを保存する
-save_message({Time, Text, Ip, Ua}) ->
-  ets:insert(?TABLE, {Time, unicode:characters_to_binary(Text), Ip, Ua}).
+save_message(Key, Markdown) ->
+  ets:insert(?TABLE, {Key, Markdown}).
 
 % IP取得
 get_ip(Req) ->
