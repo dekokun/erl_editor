@@ -92,7 +92,7 @@ Editor = React.createClass
         }, [
           $ 'textarea', {
             ref:'editor'
-            onInput: @contentUpdateFromMarkdown
+            onChange: @contentUpdateFromMarkdown
             style: {height: '100%', width: '100%', border: 0, outline: 0, fontSize: '14px', padding: '5px', overflow: 'auto', fontFamily:'Consolas, Menlo, monospace', resize: 'none', background: 'transparent'}
             value: @state.markdown
           }
