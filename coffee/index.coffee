@@ -46,6 +46,7 @@ var x = 3;
 Editor = React.createClass
   contentUpdateFromMarkdown: ->
     editor = @refs.editor.getDOMNode()
+    @sendMarkdown(editor.value)
     try
       content = md2react editor.value,
         gfm: true
@@ -54,7 +55,6 @@ Editor = React.createClass
         # highlight: (code, lang, key) -> # custom highlighter
         #   "#{lang}: #{code}"
       @setState content: content
-      @sendMarkdown(editor.value)
     catch e
       console.warn 'markdown parse error'
 
