@@ -1,1 +1,1 @@
-web: make && ./_rel/message_wall_release/bin/message_wall_release start
+web: erl -pa ebin deps/*/ebin -noshell -boot start_sasl -s reloader -s message_wall
