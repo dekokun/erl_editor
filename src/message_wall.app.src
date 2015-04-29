@@ -12,5 +12,5 @@
 		gproc
 	]},
 	{mod, {message_wall_app, []}},
-	{env, []}
+	{env, [{http_port, 8001}]}
 ]}.

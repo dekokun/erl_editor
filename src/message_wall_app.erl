@@ -16,7 +16,7 @@ start(_Type, _Args) ->
     ]}
   ]),
   {ok, _} = cowboy:start_http(http, 100,
-    [{port, 8001}],
+    [{port, port()}],
     [
       {env, [{dispatch, Dispatch}]}
     ]),
@@ -24,3 +24,12 @@ start(_Type, _Args) ->
 
 stop(_State) ->
   ok.
+
+port() ->
+  case os:getenv("PORT") of
+    false ->
+      {ok, Port} = application:get_env(http_port),
+      Port;
+    Other ->
+      list_to_integer(Other)
+  end.
