@@ -13,6 +13,12 @@ start(_Type, _Args) ->
       {"/", cowboy_static, {file, filename:join(
         [filename:dirname(code:which(?MODULE)),
           "..", "priv", "index.html"])}},
+      {"/bundle.js", cowboy_static, {file, filename:join(
+        [filename:dirname(code:which(?MODULE)),
+          "..", "priv", "bundle.js"])}},
+      {"/flex.css", cowboy_static, {file, filename:join(
+        [filename:dirname(code:which(?MODULE)),
+          "..", "priv", "flex.css"])}},
       % /websocketのリクエストをws_handlerに渡す
       {"/websocket", message_wall_handler, []}
     ]}
