@@ -4,7 +4,7 @@
 
 SocketService = require('./SocketService')
 
-socketService = new SocketService('https://erl-editor.herokuapp.com//websocket')
+socketService = new SocketService('erl-editor.herokuapp.com//websocket')
 
 global.React = require('react')
 md2react = require('md2react')
