@@ -90,7 +90,7 @@ var $, Editor, SocketService, defaultMarkdown, md2react, socketService;
 
 SocketService = require('./SocketService');
 
-socketService = new SocketService('erl-editor.herokuapp.com//websocket');
+socketService = new SocketService('erl-editor.herokuapp.com/websocket');
 
 global.React = require('react');
 
