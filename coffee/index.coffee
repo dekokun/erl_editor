@@ -44,8 +44,7 @@ Editor = React.createClass
 
   sendMarkdown: (markdown)->
     socketService.sendRequest(
-      {set_markdown: markdown},
-      () => {}
+      {set_markdown: markdown}
     )
   syncMarkdownFromServer: () ->
     socketService.sendRequest(

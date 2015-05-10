@@ -34,7 +34,7 @@ SocketService = (url)->
     ws.onmessage = (message) ->
       listener JSON.parse(message.data)
 
-  sendRequest = (request, cb) ->
+  sendRequest = (request, cb = null) ->
     # websocket closing / closed, reconnect
     if ws and ~[
         2
@@ -42,8 +42,10 @@ SocketService = (url)->
       ].indexOf(ws.readyState)
       connected = false
       init()
-    request.$id = generateMessageId()
-    pendingCallbacks[request.$id] = cb
+    if (cb)
+      request.$id = generateMessageId()
+      pendingCallbacks[request.$id] = cb
+
     if !connected
       #console.log('Not connected yet, saving request', request);
       preConnectionRequests.push request
