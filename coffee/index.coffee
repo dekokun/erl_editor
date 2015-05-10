@@ -4,10 +4,11 @@
 
 SocketService = require('./SocketService')
 
-webSocketUrl = if (location.hash == '#dev')
-  'erl-editor.herokuapp.com/websocket'
-else
-  'localhost:8001/websocket'
+webSocketUrl =
+  if (location.hash == '#dev')
+    'localhost:8001/websocket'
+  else
+    'erl-editor.herokuapp.com/websocket'
 
 socketService = new SocketService(webSocketUrl)
 
