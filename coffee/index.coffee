@@ -40,11 +40,6 @@ Editor = React.createClass
 
   componentDidMount: ->
     @syncMarkdownFromServer()
-    setInterval(
-      ()=>
-        @syncMarkdownFromServer()
-      1000
-    )
     socketService.addMessageHandler (data)=>
       editor = @refs.editor.getDOMNode()
       caretStart = editor.selectionStart
