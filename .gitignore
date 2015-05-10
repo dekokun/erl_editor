@@ -3,3 +3,4 @@ _rel/*
 node_modules/*
 deps/*
 ebin/*
+.rebar/*
