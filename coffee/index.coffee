@@ -73,12 +73,13 @@ Editor = React.createClass
 
   render: ->
     $ 'div', {key: 'root'}, [
-      $ 'h1', {style: {textAlign: 'center', fontFamily: '"Poiret One", cursive', fontSize: '25px', height: '50px', lineHeight: '50px'}}, 'erlang editor'
+      $ 'h1', {key: 'headword', style: {textAlign: 'center', fontFamily: '"Poiret One", cursive', fontSize: '25px', height: '50px', lineHeight: '50px'}}, 'erlang editor'
       $ 'div', {key: 'layout', className: 'flex'}, [
         $ 'div', {key: 'editorContainer', style:{
           width: '50%', borderRight: '1px solid', borderColor: '#999', overflow: 'hidden'}
         }, [
           $ 'textarea', {
+            key: 'editor',
             ref:'editor'
             onChange: @onChangeTextarea
             style: {height: '100%', width: '100%', border: 0, outline: 0, fontSize: '14px', padding: '5px', overflow: 'auto', fontFamily:'Consolas, Menlo, monospace', resize: 'none', background: 'transparent'}
