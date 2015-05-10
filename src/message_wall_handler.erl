@@ -47,7 +47,9 @@ websocket_handle({text, <<"\"get_markdown\"">>}, Req, #state{room_id=RoomId} = S
 
 % get_markdown以外のメッセージの扱い
 websocket_handle({text, Text}, Req, #state{room_id=RoomId} = State) ->
-  {[{<<"set_markdown">>,RawMarkdown}|_]} = jiffy:decode(Text),
+  {[{<<"set_markdown">>,RawMarkdown}, {<<"from">>,FromGuid}|_]} = jiffy:decode(Text),
+
+  io:format("~w~n", [FromGuid]),
   io:format("~w~n", [RawMarkdown]),
   Markdown = case RawMarkdown of
     <<>> -> "";
@@ -57,7 +59,7 @@ websocket_handle({text, Text}, Req, #state{room_id=RoomId} = State) ->
   save_message(RoomId, Markdown),
   % gprocにイベントを公開し、
   % 全ての接続クライアントにwebsocket_info({gproc_ps_event, new_message, Time}, Req, State)を呼び出します
-  gproc_ps:publish(l, new_message, RoomId),
+  gproc_ps:publish(l, new_message, {RoomId, FromGuid}),
   {ok, Req, State};
 
 
@@ -68,13 +70,14 @@ websocket_handle(_Frame, Req, State) ->
 
 % websocket_infoは本プロセスにErlangメッセージが届いた時に実行されます
 % gprocからnew_messageメッセージの場合はそのメッセージをWebSocketに送信します
-websocket_info({gproc_ps_event, new_message, Key}, Req, State) ->
+websocket_info({gproc_ps_event, new_message, {Key, FromGuid}}, Req, State) ->
   RawMessage = get_markdown(Key),
   % ETS結果をマップに変換
   io:format("~w", [RawMessage]),
   io:format("~w, ~w~n", [RawMessage, ?LINE]),
   Message = format_message(RawMessage),
   JsonResponse = jiffy:encode(#{
+    <<"from">> => FromGuid,
     <<"type">> => <<"all">>,
     <<"markdown">> => Message
   }),

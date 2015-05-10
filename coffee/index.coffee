@@ -9,6 +9,10 @@ webSocketUrl =
     'localhost:8001/websocket'
   else
     'erl-editor.herokuapp.com/websocket'
+myGuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace /[xy]/g, (c) ->
+  r = Math.random()*16|0
+  v = if c == 'x' then r else (r&0x3|0x8)
+  v.toString(16)
 
 socketService = new SocketService(webSocketUrl)
 
@@ -45,17 +49,20 @@ Editor = React.createClass
       editor = @refs.editor.getDOMNode()
       caretStart = editor.selectionStart
       caretEnd = editor.selectionEnd
-      @setState
-        markdown: data.markdown,
-        # 暫定版キャレット位置維持機能。
-        # 触っているところより前が書き換わると維持されないという…
-        () =>
-          editor.setSelectionRange(caretStart, caretEnd)
-        @contentUpdateFromMarkdown
+      # 自分以外からメッセージが来た場合だけmarkdownを更新する
+      if data.from != myGuid
+        @setState
+          markdown: data.markdown,
+          # 暫定版キャレット位置維持機能。
+          # 触っているところより前が書き換わると維持されないという…
+          () =>
+            editor.setSelectionRange(caretStart, caretEnd)
+          @contentUpdateFromMarkdown
 
   sendMarkdown: (markdown)->
     socketService.sendRequest(
-      {set_markdown: markdown}
+      set_markdown: markdown
+      from: myGuid
     )
   syncMarkdownFromServer: () ->
     socketService.sendRequest(
