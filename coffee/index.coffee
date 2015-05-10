@@ -47,7 +47,8 @@ Editor = React.createClass
       caretEnd = editor.selectionEnd
       @setState
         markdown: data.markdown,
-        # 雰囲気キャレット維持。触っているところより前が書き換わると維持されないという…
+        # 暫定版キャレット位置維持機能。
+        # 触っているところより前が書き換わると維持されないという…
         () =>
           console.log caretStart
           editor.setSelectionRange(caretStart, caretEnd)
