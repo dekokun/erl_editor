@@ -39,7 +39,6 @@ Editor = React.createClass
       console.warn 'markdown parse error'
 
   componentDidMount: ->
-    @syncMarkdownFromServer()
     socketService.addMessageHandler (data)=>
       editor = @refs.editor.getDOMNode()
       caretStart = editor.selectionStart
@@ -53,6 +52,7 @@ Editor = React.createClass
           () =>
             editor.setSelectionRange(caretStart, caretEnd)
           @contentUpdateFromMarkdown
+    @syncMarkdownFromServer()
 
   sendMarkdown: (markdown)->
     socketService.sendRequest(
