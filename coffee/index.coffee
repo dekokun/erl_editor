@@ -22,13 +22,11 @@ md2react = require('md2react')
 $ = React.createElement
 
 Editor = React.createClass
-  contentUpdateFromMarkdown: ->
-    editor = @refs.editor.getDOMNode()
-    @sendMarkdown(editor.value)
+  contentUpdateFromMarkdown: (markdown)->
     @setState
-      markdown: editor.value
+      markdown: markdown
     try
-      content = md2react editor.value,
+      content = md2react markdown,
         gfm: true
         breaks: true
         tables: true
@@ -51,7 +49,7 @@ Editor = React.createClass
           # 触っているところより前が書き換わると維持されないという…
           () =>
             editor.setSelectionRange(caretStart, caretEnd)
-          @contentUpdateFromMarkdown
+         @contentUpdateFromMarkdown data.markdown
     @syncMarkdownFromServer()
 
   sendMarkdown: (markdown)->
@@ -68,6 +66,11 @@ Editor = React.createClass
     content: null
     markdown: null
 
+  onChangeTextarea: ->
+    editor = @refs.editor.getDOMNode()
+    @sendMarkdown(editor.value)
+    @contentUpdateFromMarkdown(editor.value)
+
   render: ->
     $ 'div', {key: 'root'}, [
       $ 'h1', {style: {textAlign: 'center', fontFamily: '"Poiret One", cursive', fontSize: '25px', height: '50px', lineHeight: '50px'}}, 'erlang editor'
@@ -77,7 +80,7 @@ Editor = React.createClass
         }, [
           $ 'textarea', {
             ref:'editor'
-            onChange: @contentUpdateFromMarkdown
+            onChange: @onChangeTextarea
             style: {height: '100%', width: '100%', border: 0, outline: 0, fontSize: '14px', padding: '5px', overflow: 'auto', fontFamily:'Consolas, Menlo, monospace', resize: 'none', background: 'transparent'}
             value: @state.markdown
           }
