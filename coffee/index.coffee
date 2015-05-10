@@ -11,38 +11,6 @@ md2react = require('md2react')
 
 $ = React.createElement
 
-defaultMarkdown = '''
-# Hello
-body
-1. 1
-2. 2
-------
-- [ ] unchecked
-- [x] checked
-- foo
-`a`
-------
-```
-bbb
-```
-**AA**
-*BB*
-[foo](/foo)
-![image](http://placehold.it/20x20/27709b/ffffff)
-> aaa
-> bbb
-|  TH  |  TH  |
-| ---- | ---- |
-|  TD  |  TD  |
-|  TD  |  TD  |
-'''
-
-defaultMarkdown = '''
-```js
-var x = 3;
-```
-'''
-
 Editor = React.createClass
   contentUpdateFromMarkdown: ->
     editor = @refs.editor.getDOMNode()
