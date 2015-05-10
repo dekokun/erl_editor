@@ -41,6 +41,17 @@ Editor = React.createClass
         @syncMarkdownFromServer()
       1000
     )
+    socketService.addMessageHandler (data)=>
+      editor = @refs.editor.getDOMNode()
+      caretStart = editor.selectionStart
+      caretEnd = editor.selectionEnd
+      @setState
+        markdown: data.markdown,
+        # 雰囲気キャレット維持。触っているところより前が書き換わると維持されないという…
+        () =>
+          console.log caretStart
+          editor.setSelectionRange(caretStart, caretEnd)
+        @contentUpdateFromMarkdown
 
   sendMarkdown: (markdown)->
     socketService.sendRequest(
@@ -48,18 +59,7 @@ Editor = React.createClass
     )
   syncMarkdownFromServer: () ->
     socketService.sendRequest(
-      'get_markdown',
-      (data) =>
-        editor = @refs.editor.getDOMNode()
-        caretStart = editor.selectionStart
-        caretEnd = editor.selectionEnd
-        @setState
-          markdown: data.markdown,
-            # 雰囲気キャレット維持。触っているところより前が書き換わると維持されないという…
-            () =>
-              console.log caretStart
-              editor.setSelectionRange(caretStart, caretEnd)
-         @contentUpdateFromMarkdown
+      'get_markdown'
     )
 
   getInitialState: ->

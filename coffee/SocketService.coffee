@@ -1,6 +1,7 @@
 SocketService = (url)->
   service = {}
   pendingCallbacks = {}
+  messageHandlers = []
   currentMessageId = 0
   ws = undefined
   preConnectionRequests = []
@@ -34,6 +35,11 @@ SocketService = (url)->
     ws.onmessage = (message) ->
       listener JSON.parse(message.data)
 
+  addMessageHandler = (handler) ->
+    unless typeof handler == 'function'
+      throw new Error('handler must be function')
+    messageHandlers.push handler
+
   sendRequest = (request, cb = null) ->
     # websocket closing / closed, reconnect
     if ws and ~[
@@ -59,6 +65,7 @@ SocketService = (url)->
     # If an object exists with id in our pendingCallbacks object, resolve it
     if pendingCallbacks.hasOwnProperty(message.$id)
       pendingCallbacks[message.$id] message
+    handler(message) for handler in messageHandlers
 
   requestComplete = (id) ->
     #console.log("requestComplete:", id, 'ws.readyState', ws.readyState);
@@ -77,6 +84,7 @@ SocketService = (url)->
   service.sendRequest = sendRequest
   service.requestComplete = requestComplete
   service.stopRequest = stopRequest
+  service.addMessageHandler = addMessageHandler
   service
 
 module.exports = SocketService
