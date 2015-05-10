@@ -50,7 +50,6 @@ Editor = React.createClass
         # 暫定版キャレット位置維持機能。
         # 触っているところより前が書き換わると維持されないという…
         () =>
-          console.log caretStart
           editor.setSelectionRange(caretStart, caretEnd)
         @contentUpdateFromMarkdown
 
