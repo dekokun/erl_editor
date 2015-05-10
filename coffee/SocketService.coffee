@@ -11,6 +11,7 @@ SocketService = (url)->
   init = ->
     service = {}
     pendingCallbacks = {}
+    # messageHandlerは接続が切れようがなにしようがそのままにしていたいのでinitでは初期化しない
     currentMessageId = 0
     preConnectionRequests = []
     connected = false
