@@ -2,9 +2,10 @@
 var SocketService;
 
 SocketService = function(url) {
-  var connected, currentMessageId, generateMessageId, init, listener, pendingCallbacks, preConnectionRequests, requestComplete, sendRequest, service, stopRequest, ws;
+  var addMessageHandler, connected, currentMessageId, generateMessageId, init, listener, messageHandlers, pendingCallbacks, preConnectionRequests, requestComplete, sendRequest, service, stopRequest, ws;
   service = {};
   pendingCallbacks = {};
+  messageHandlers = [];
   currentMessageId = 0;
   ws = void 0;
   preConnectionRequests = [];
@@ -41,13 +42,24 @@ SocketService = function(url) {
       return listener(JSON.parse(message.data));
     };
   };
+  addMessageHandler = function(handler) {
+    if (typeof handler !== 'function') {
+      throw new Error('handler must be function');
+    }
+    return messageHandlers.push(handler);
+  };
   sendRequest = function(request, cb) {
+    if (cb == null) {
+      cb = null;
+    }
     if (ws && ~[2, 3].indexOf(ws.readyState)) {
       connected = false;
       init();
     }
-    request.$id = generateMessageId();
-    pendingCallbacks[request.$id] = cb;
+    if (cb) {
+      request.$id = generateMessageId();
+      pendingCallbacks[request.$id] = cb;
+    }
     if (!connected) {
       preConnectionRequests.push(request);
     } else {
@@ -56,9 +68,16 @@ SocketService = function(url) {
     return request.$id;
   };
   listener = function(message) {
+    var handler, j, len, results;
     if (pendingCallbacks.hasOwnProperty(message.$id)) {
-      return pendingCallbacks[message.$id](message);
+      pendingCallbacks[message.$id](message);
     }
+    results = [];
+    for (j = 0, len = messageHandlers.length; j < len; j++) {
+      handler = messageHandlers[j];
+      results.push(handler(message));
+    }
+    return results;
   };
   requestComplete = function(id) {
     return delete pendingCallbacks[id];
@@ -77,6 +96,7 @@ SocketService = function(url) {
   service.sendRequest = sendRequest;
   service.requestComplete = requestComplete;
   service.stopRequest = stopRequest;
+  service.addMessageHandler = addMessageHandler;
   return service;
 };
 
@@ -86,11 +106,20 @@ module.exports = SocketService;
 
 },{}],2:[function(require,module,exports){
 (function (global){
-var $, Editor, SocketService, defaultMarkdown, md2react, socketService;
+var $, Editor, SocketService, md2react, myGuid, socketService, webSocketUrl;
 
 SocketService = require('./SocketService');
 
-socketService = new SocketService('erl-editor.herokuapp.com/websocket');
+webSocketUrl = location.hash === '#dev' ? 'localhost:8001/websocket' : 'erl-editor.herokuapp.com/websocket';
+
+myGuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  var r, v;
+  r = Math.random() * 16 | 0;
+  v = c === 'x' ? r : r & 0x3 | 0x8;
+  return v.toString(16);
+});
+
+socketService = new SocketService(webSocketUrl);
 
 global.React = require('react');
 
@@ -98,20 +127,14 @@ md2react = require('md2react');
 
 $ = React.createElement;
 
-defaultMarkdown = '# Hello\nbody\n1. 1\n2. 2\n------\n- [ ] unchecked\n- [x] checked\n- foo\n`a`\n------\n```\nbbb\n```\n**AA**\n*BB*\n[foo](/foo)\n![image](http://placehold.it/20x20/27709b/ffffff)\n> aaa\n> bbb\n|  TH  |  TH  |\n| ---- | ---- |\n|  TD  |  TD  |\n|  TD  |  TD  |';
-
-defaultMarkdown = '```js\nvar x = 3;\n```';
-
 Editor = React.createClass({
-  contentUpdateFromMarkdown: function() {
-    var content, e, editor;
-    editor = this.refs.editor.getDOMNode();
-    this.sendMarkdown(editor.value);
+  contentUpdateFromMarkdown: function(markdown) {
+    var content, e;
     this.setState({
-      markdown: editor.value
+      markdown: markdown
     });
     try {
-      content = md2react(editor.value, {
+      content = md2react(markdown, {
         gfm: true,
         breaks: true,
         tables: true
@@ -125,44 +148,44 @@ Editor = React.createClass({
     }
   },
   componentDidMount: function() {
-    this.syncMarkdownFromServer();
-    return setInterval((function(_this) {
-      return function() {
-        return _this.syncMarkdownFromServer();
-      };
-    })(this), 1000);
-  },
-  sendMarkdown: function(markdown) {
-    return socketService.sendRequest({
-      set_markdown: markdown
-    }, (function(_this) {
-      return function() {
-        return {};
-      };
-    })(this));
-  },
-  syncMarkdownFromServer: function() {
-    return socketService.sendRequest('get_markdown', (function(_this) {
+    socketService.addMessageHandler((function(_this) {
       return function(data) {
         var caretEnd, caretStart, editor;
         editor = _this.refs.editor.getDOMNode();
         caretStart = editor.selectionStart;
         caretEnd = editor.selectionEnd;
-        _this.setState({
-          markdown: data.markdown
-        }, function() {
-          console.log(caretStart);
-          return editor.setSelectionRange(caretStart, caretEnd);
-        });
-        return _this.contentUpdateFromMarkdown;
+        if (data.from !== myGuid) {
+          _this.setState({
+            markdown: data.markdown
+          }, function() {
+            return editor.setSelectionRange(caretStart, caretEnd);
+          });
+          return _this.contentUpdateFromMarkdown(data.markdown);
+        }
       };
     })(this));
+    return this.syncMarkdownFromServer();
+  },
+  sendMarkdown: function(markdown) {
+    return socketService.sendRequest({
+      set_markdown: markdown,
+      from: myGuid
+    });
+  },
+  syncMarkdownFromServer: function() {
+    return socketService.sendRequest('get_markdown');
   },
   getInitialState: function() {
     return {
       content: null,
       markdown: null
     };
+  },
+  onChangeTextarea: function() {
+    var editor;
+    editor = this.refs.editor.getDOMNode();
+    this.sendMarkdown(editor.value);
+    return this.contentUpdateFromMarkdown(editor.value);
   },
   render: function() {
     return $('div', {
@@ -191,7 +214,7 @@ Editor = React.createClass({
         }, [
           $('textarea', {
             ref: 'editor',
-            onChange: this.contentUpdateFromMarkdown,
+            onChange: this.onChangeTextarea,
             style: {
               height: '100%',
               width: '100%',
