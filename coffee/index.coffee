@@ -16,6 +16,38 @@ myGuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace /[xy]/g, (c) ->
 
 socketService = new SocketService(webSocketUrl)
 
+defaulMarkdown = '''
+# 小見出し1
+
+参照：[Erlangで一旦何か作ってみた](http://dekokun.github.io/posts/2015-05-10.html)
+
+## 小見出し2
+
+- hogehoge
+- fugafuga
+
+1. まず文字を入力する
+1. 次に文字を入力する
+1. その次に文字を入力する
+
+```javascript
+var a = 1;
+var b = 2;
+```
+
+## 斜体
+
+*abc*
+
+## 太字
+
+**abc**
+
+## 取り消し
+
+<del>abc</del>
+'''
+
 global.React = require('react')
 md2react = require('md2react')
 
@@ -43,13 +75,15 @@ Editor = React.createClass
       caretEnd = editor.selectionEnd
       # 自分以外からメッセージが来た場合だけmarkdownを更新する
       if data.from != myGuid
+        markdown = if data.markdown == "" then defaulMarkdown else data.markdown
+        console.log markdown
         @setState
-          markdown: data.markdown,
+          markdown: markdown,
           # 暫定版キャレット位置維持機能。
           # 触っているところより前が書き換わると維持されないという…
           () =>
             editor.setSelectionRange(caretStart, caretEnd)
-         @contentUpdateFromMarkdown data.markdown
+         @contentUpdateFromMarkdown markdown
     @syncMarkdownFromServer()
 
   sendMarkdown: (markdown)->
