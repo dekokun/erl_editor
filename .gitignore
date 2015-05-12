@@ -4,3 +4,4 @@ node_modules/*
 deps/*
 ebin/*
 .rebar/*
+priv/bundle.js
