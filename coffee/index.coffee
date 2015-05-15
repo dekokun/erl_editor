@@ -77,7 +77,6 @@ Editor = React.createClass
       # 自分以外からメッセージが来た場合だけmarkdownを更新する
       if data.from != myGuid
         markdown = if data.markdown == "" then defaulMarkdown else data.markdown
-        console.log markdown
         @setState
           markdown: markdown,
           # 暫定版キャレット位置維持機能。
