@@ -4,16 +4,16 @@
 
 SocketService = require('./SocketService')
 
-webSocketUrl =
-  if (location.hash == '#dev')
-    'localhost:8001/websocket'
-  else
-    'erl-editor.herokuapp.com/websocket'
 myGuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace /[xy]/g, (c) ->
   r = Math.random()*16|0
   v = if c == 'x' then r else (r&0x3|0x8)
   v.toString(16)
 
+webSocketUrl =
+  if (location.hash == '#dev')
+    'localhost:8001/websocket'
+  else
+    'erl-editor.herokuapp.com/websocket'
 socketService = new SocketService(webSocketUrl)
 
 defaulMarkdown = '''
