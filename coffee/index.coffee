@@ -2,20 +2,11 @@
 # Released under the MIT license
 # https://raw.githubusercontent.com/mizchi/md2react/master/LICENSE
 
-SocketService = require('./SocketService')
-
 # ランダム文字列を生成してGUIDとする
 myGuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace /[xy]/g, (c) ->
   r = Math.random()*16|0
   v = if c == 'x' then r else (r&0x3|0x8)
   v.toString(16)
-
-webSocketUrl =
-  if (location.hash == '#dev')
-    'localhost:8001/websocket'
-  else
-    'erl-editor.herokuapp.com/websocket'
-socketService = new SocketService(webSocketUrl)
 
 defaulMarkdown = '''
 # 小見出し1
@@ -51,6 +42,14 @@ var b = 2;
 
 global.React = require('react')
 md2react = require('md2react')
+SocketService = require('./SocketService')
+
+webSocketUrl =
+  if (location.hash == '#dev')
+    'localhost:8001/websocket'
+  else
+    'erl-editor.herokuapp.com/websocket'
+socketService = new SocketService(webSocketUrl)
 
 $ = React.createElement
 
