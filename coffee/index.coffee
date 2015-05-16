@@ -147,4 +147,4 @@ Editor = React.createClass
     ]
 
 window.addEventListener 'DOMContentLoaded', ->
-  React.render(React.createElement(Editor, {}), document.body)
+  React.render($(Editor, {}), document.body)
