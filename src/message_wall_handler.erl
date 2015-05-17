@@ -70,8 +70,8 @@ websocket_handle(_Frame, Req, State) ->
 
 % websocket_infoは本プロセスにErlangメッセージが届いた時に実行されます
 % gprocからnew_messageメッセージの場合はそのメッセージをWebSocketに送信します
-websocket_info({gproc_ps_event, new_message, {Key, FromGuid}}, Req, State) ->
-  RawMessage = get_markdown(Key),
+websocket_info({gproc_ps_event, new_message, {RoomId, FromGuid}}, Req, State) ->
+  RawMessage = get_markdown(RoomId),
   % ETS結果をマップに変換
   io:format("~w", [RawMessage]),
   io:format("~w, ~w~n", [RawMessage, ?LINE]),
