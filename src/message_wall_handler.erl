@@ -58,7 +58,7 @@ websocket_handle({text, Text}, Req, #state{room_id=RoomId} = State) ->
   io:format("~w~n", [Markdown]),
   save_message(RoomId, Markdown),
   % gprocにイベントを公開し、
-  % 全ての接続クライアントにwebsocket_info({gproc_ps_event, new_message, Time}, Req, State)を呼び出します
+  % 全ての接続クライアントにwebsocket_info({gproc_ps_event, new_message, {RoomId, FromGuid}}, Req, State)を呼び出します
   gproc_ps:publish(l, new_message, {RoomId, FromGuid}),
   {ok, Req, State};
 
