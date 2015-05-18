@@ -49,8 +49,6 @@ websocket_handle({text, <<"\"get_markdown\"">>}, Req, #state{room_id=RoomId} = S
 websocket_handle({text, Text}, Req, #state{room_id=RoomId} = State) ->
   {[{<<"set_markdown">>,RawMarkdown}, {<<"from">>,FromGuid}|_]} = jiffy:decode(Text),
 
-  io:format("~w~n", [FromGuid]),
-  io:format("~w~n", [RawMarkdown]),
   Markdown = case RawMarkdown of
     <<>> -> "";
     Data -> Data
@@ -74,7 +72,6 @@ websocket_info({gproc_ps_event, new_message, {RoomId, FromGuid}}, Req, State) ->
   RawMessage = get_markdown(RoomId),
   % ETS結果をマップに変換
   io:format("~w", [RawMessage]),
-  io:format("~w, ~w~n", [RawMessage, ?LINE]),
   Message = format_message(RawMessage),
   JsonResponse = jiffy:encode(#{
     <<"from">> => FromGuid,
