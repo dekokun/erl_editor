@@ -13,6 +13,14 @@ defaulMarkdown = '''
 
 参照：[Erlangで一旦何か作ってみた](http://dekokun.github.io/posts/2015-05-10.html)
 
+mizchiさんのmd2reactのplaygroundをほぼそのまま使わせて頂いています
+
+## md2react playground
+
+- license: MIT
+- author: mizchi
+- maintainers: mizchi <miz404@gmail.com>
+
 ## 小見出し2
 
 - hogehoge
